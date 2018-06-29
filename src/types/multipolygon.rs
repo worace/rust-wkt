@@ -18,7 +18,6 @@ use types::polygon::Polygon;
 use types::CoordType;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
 pub struct MultiPolygon<T: CoordType>(pub Vec<Polygon<T>>);

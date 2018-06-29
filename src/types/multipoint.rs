@@ -18,7 +18,6 @@ use types::CoordType;
 use types::point::Point;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
 pub struct MultiPoint<T: CoordType>(pub Vec<Point<T>>);

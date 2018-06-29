@@ -18,7 +18,6 @@ use types::linestring::LineString;
 use types::CoordType;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
 pub struct Polygon<T: CoordType>(pub Vec<LineString<T>>);
