@@ -11,19 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+extern crate num_traits;
 
+// use num_traits::{Num, NumCast};
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
+use self::num_traits::Float;
+
 
 #[derive(Default)]
-pub struct Coord {
-    pub x: f64,
-    pub y: f64,
-    pub z: Option<f64>,
-    pub m: Option<f64>,
+pub struct Coord<T>
+where
+    T: Float,
+{
+    pub x: T,
+    pub y: T,
+    pub z: Option<T>,
+    pub m: Option<T>,
 }
 
-impl FromTokens for Coord {
+impl<T: Float> FromTokens for Coord<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let x = match tokens.next() {
             Some(Token::Number(n)) => n,
