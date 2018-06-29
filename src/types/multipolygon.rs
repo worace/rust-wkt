@@ -14,23 +14,23 @@
 
 use tokenizer::PeekableTokens;
 use types::polygon::Polygon;
+use types::CoordType;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiPolygon<T: Float>(pub Vec<Polygon<T>>);
+pub struct MultiPolygon<T: CoordType>(pub Vec<Polygon<T>>);
 
-impl<T: Float> MultiPolygon<T> {
+impl<T: CoordType> MultiPolygon<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiPolygon(self)
     }
 }
 
-impl<T: Float> FromTokens for MultiPolygon<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> FromTokens<T> for MultiPolygon<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let result =
-            FromTokens::comma_many(<Polygon as FromTokens>::from_tokens_with_parens, tokens);
+            FromTokens::comma_many(<Polygon<T> as FromTokens<T>>::from_tokens_with_parens, tokens);
         result.map(|vec| MultiPolygon(vec))
     }
 }
@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn basic_multipolygon() {
-        let mut wkt = Wkt::from_str("MULTIPOLYGON (((8 4)), ((4 0)))")
+        let mut wkt: Wkt<f64> = Wkt::from_str("MULTIPOLYGON (((8 4)), ((4 0)))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());

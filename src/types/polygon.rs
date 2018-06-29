@@ -14,23 +14,23 @@
 
 use tokenizer::PeekableTokens;
 use types::linestring::LineString;
+use types::CoordType;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
-pub struct Polygon<T: Float>(pub Vec<LineString<T>>);
+pub struct Polygon<T: CoordType>(pub Vec<LineString<T>>);
 
-impl<T: Float> Polygon<T> {
+impl<T: CoordType> Polygon<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::Polygon(self)
     }
 }
 
-impl<T: Float> FromTokens for Polygon<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> FromTokens<T> for Polygon<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let result =
-            FromTokens::comma_many(<LineString as FromTokens>::from_tokens_with_parens, tokens);
+            FromTokens::comma_many(<LineString<T> as FromTokens<T>>::from_tokens_with_parens, tokens);
         result.map(|vec| Polygon(vec))
     }
 }
@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn basic_polygon() {
-        let mut wkt = Wkt::from_str("POLYGON ((8 4, 4 0, 0 4, 8 4), (7 3, 4 1, 1 4, 7 3))")
+        let mut wkt: Wkt<f64> = Wkt::from_str("POLYGON ((8 4, 4 0, 0 4, 8 4), (7 3, 4 1, 1 4, 7 3))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());

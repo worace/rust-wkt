@@ -13,23 +13,23 @@
 // limitations under the License.
 
 use tokenizer::PeekableTokens;
+use types::CoordType;
 use types::point::Point;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiPoint<T: Float>(pub Vec<Point<T>>);
+pub struct MultiPoint<T: CoordType>(pub Vec<Point<T>>);
 
-impl<T: Float> MultiPoint<T> {
+impl<T: CoordType> MultiPoint<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiPoint(self)
     }
 }
 
-impl<T: Float> FromTokens for MultiPoint<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
-        let result = FromTokens::comma_many(<Point as FromTokens>::from_tokens_with_parens, tokens);
+impl<T: CoordType> FromTokens<T> for MultiPoint<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
+        let result = FromTokens::comma_many(<Point<T> as FromTokens<T>>::from_tokens_with_parens, tokens);
         result.map(|vec| MultiPoint(vec))
     }
 }
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn basic_multipoint() {
-        let mut wkt = Wkt::from_str("MULTIPOINT ((8 4), (4 0))").ok().unwrap();
+        let mut wkt: Wkt<f64> = Wkt::from_str("MULTIPOINT ((8 4), (4 0))").ok().unwrap();
         assert_eq!(1, wkt.items.len());
         let points = match wkt.items.pop().unwrap() {
             Geometry::MultiPoint(MultiPoint(points)) => points,

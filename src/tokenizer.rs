@@ -13,12 +13,13 @@
 // limitations under the License.
 
 use std::iter::Peekable;
-use num_traits::Float;
+use types::CoordType;
+use std::marker::PhantomData;
 
 #[derive(PartialEq, Debug)]
 pub enum Token<T>
 where
-    T: Float,
+    T: CoordType,
 {
     Comma,
     Number(T),
@@ -42,23 +43,25 @@ fn is_numberlike(c: char) -> bool {
     }
 }
 
-pub type PeekableTokens = Peekable<Tokens<T>>;
+pub type PeekableTokens<T: CoordType> = Peekable<Tokens<T>>;
 
-pub struct Tokens<_>
-where T: Float
+pub struct Tokens<T>
+where T: CoordType,
 {
+    _m: PhantomData<T>,
     text: String,
 }
 
-impl<T: Float> Tokens<T> {
+impl<T: CoordType> Tokens<T> {
     pub fn from_str(input: &str) -> Self {
         Tokens {
+            _m: PhantomData,
             text: input.to_string(),
         }
     }
 }
 
-impl<T: Float> Iterator for Tokens<T> {
+impl<T: CoordType> Iterator for Tokens<T> {
     type Item = Token<T>;
 
     fn next(&mut self) -> Option<Token<T>> {
@@ -79,7 +82,7 @@ impl<T: Float> Iterator for Tokens<T> {
                 number = number.trim_left_matches('+').to_string();
                 match number.parse::<T>() {
                     Ok(parsed_num) => Some(Token::Number(parsed_num)),
-                    Err(e) => panic!("Could not parse number: {}", e),
+                    Err(e) => panic!("Could not parse number: {}", c),
                 }
             }
             c => {
@@ -90,7 +93,7 @@ impl<T: Float> Iterator for Tokens<T> {
     }
 }
 
-impl<T> Tokens<T> {
+impl<T: CoordType> Tokens<T> {
     fn pop_front(&mut self) -> Option<char> {
         match self.text.is_empty() {
             true => None,
@@ -118,21 +121,21 @@ impl<T> Tokens<T> {
 #[test]
 fn test_tokenizer_empty() {
     let test_str = "";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(tokens, vec![]);
 }
 
 #[test]
 fn test_tokenizer_1word() {
     let test_str = "hello";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(tokens, vec![Token::Word("hello".to_string())]);
 }
 
 #[test]
 fn test_tokenizer_2words() {
     let test_str = "hello world";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(
         tokens,
         vec![
@@ -145,28 +148,28 @@ fn test_tokenizer_2words() {
 #[test]
 fn test_tokenizer_1number() {
     let test_str = "4.2";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(tokens, vec![Token::Number(4.2)]);
 }
 
 #[test]
 fn test_tokenizer_1number_plus() {
     let test_str = "+4.2";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(tokens, vec![Token::Number(4.2)]);
 }
 
 #[test]
 fn test_tokenizer_2numbers() {
     let test_str = ".4 -2";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(tokens, vec![Token::Number(0.4), Token::Number(-2.0)]);
 }
 
 #[test]
 fn test_tokenizer_point() {
     let test_str = "POINT (10 -20)";
-    let tokens: Vec<Token> = Tokens::from_str(test_str).collect();
+    let tokens: Vec<Token<f64>> = Tokens::from_str(test_str).collect();
     assert_eq!(
         tokens,
         vec![
