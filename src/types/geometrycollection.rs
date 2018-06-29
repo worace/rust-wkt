@@ -16,34 +16,19 @@ use std::fmt;
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct GeometryCollection(pub Vec<Geometry>);
+pub struct GeometryCollection<T: Float>(pub Vec<Geometry<T>>);
 
-impl GeometryCollection {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> GeometryCollection<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::GeometryCollection(self)
     }
 }
 
-impl fmt::Display for GeometryCollection {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        if self.0.is_empty() {
-            f.write_str("GEOMETRYCOLLECTION EMPTY")
-        } else {
-            let strings = self
-                .0
-                .iter()
-                .map(|geometry| format!("{}", geometry))
-                .collect::<Vec<_>>()
-                .join(",");
 
-            write!(f, "GEOMETRYCOLLECTION({})", strings)
-        }
-    }
-}
-
-impl FromTokens for GeometryCollection {
+impl<T: Float> FromTokens for GeometryCollection<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let mut items = Vec::new();
 

@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+extern crate num_traits;
 
 use std::ascii::AsciiExt;
 use std::default::Default;
@@ -24,6 +25,7 @@ use types::MultiPoint;
 use types::MultiPolygon;
 use types::Point;
 use types::Polygon;
+use self::num_traits::Float;
 
 mod tokenizer;
 
@@ -35,17 +37,20 @@ pub mod types;
 #[cfg(feature = "geo-types")]
 pub use towkt::ToWkt;
 
-pub enum Geometry {
-    Point(Point),
-    LineString(LineString),
-    Polygon(Polygon),
-    MultiPoint(MultiPoint),
-    MultiLineString(MultiLineString),
-    MultiPolygon(MultiPolygon),
-    GeometryCollection(GeometryCollection),
+pub enum Geometry<T>
+where
+    T: Float,
+{
+    Point(Point<T>),
+    LineString(LineString<T>),
+    Polygon(Polygon<T>),
+    MultiPoint(MultiPoint<T>),
+    MultiLineString(MultiLineString<T>),
+    MultiPolygon(MultiPolygon<T>),
+    GeometryCollection(GeometryCollection<T>),
 }
 
-impl Geometry {
+impl<T: Float> Geometry<T> {
     fn from_word_and_tokens(word: &str, tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         match word {
             "POINT" => {
@@ -95,16 +100,19 @@ impl fmt::Display for Geometry {
     }
 }
 
-pub struct Wkt {
-    pub items: Vec<Geometry>,
+pub struct Wkt<T>
+where
+    T: Float,
+{
+    pub items: Vec<Geometry<T>>,
 }
 
-impl Wkt {
+impl<T: Float> Wkt<T> {
     pub fn new() -> Self {
         Wkt { items: vec![] }
     }
 
-    pub fn add_item(&mut self, item: Geometry) {
+    pub fn add_item(&mut self, item: Geometry<T>) {
         self.items.push(item);
     }
 
@@ -113,7 +121,7 @@ impl Wkt {
         Wkt::from_tokens(tokens)
     }
 
-    fn from_tokens(tokens: Tokens) -> Result<Self, &'static str> {
+    fn from_tokens(tokens: Tokens<T>) -> Result<Self, &'static str> {
         let mut wkt = Wkt::new();
         let mut tokens = tokens.peekable();
         let word = match tokens.next() {

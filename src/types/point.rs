@@ -17,17 +17,18 @@ use tokenizer::PeekableTokens;
 use types::coord::Coord;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct Point(pub Option<Coord>);
+pub struct Point<T: Float>(pub Option<Coord<T>>);
 
-impl Point {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> Point<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::Point(self)
     }
 }
 
-impl fmt::Display for Point {
+impl<T: Float> fmt::Display for Point<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self.0 {
             Some(ref coord) => {
@@ -49,7 +50,7 @@ impl fmt::Display for Point {
     }
 }
 
-impl FromTokens for Point {
+impl<T: Float> FromTokens for Point<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result = <Coord as FromTokens>::from_tokens(tokens);
         result.map(|coord| Point(Some(coord)))

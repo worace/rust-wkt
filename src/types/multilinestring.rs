@@ -17,12 +17,13 @@ use tokenizer::PeekableTokens;
 use types::linestring::LineString;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiLineString(pub Vec<LineString>);
+pub struct MultiLineString<T: Float>(pub Vec<LineString<T>>);
 
-impl MultiLineString {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> MultiLineString<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiLineString(self)
     }
 }
@@ -50,7 +51,7 @@ impl fmt::Display for MultiLineString {
     }
 }
 
-impl FromTokens for MultiLineString {
+impl<T: Float> FromTokens for MultiLineString<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result =
             FromTokens::comma_many(<LineString as FromTokens>::from_tokens_with_parens, tokens);

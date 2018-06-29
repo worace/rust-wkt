@@ -17,12 +17,13 @@ use tokenizer::PeekableTokens;
 use types::point::Point;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiPoint(pub Vec<Point>);
+pub struct MultiPoint<T: Float>(pub Vec<Point<T>>);
 
-impl MultiPoint {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> MultiPoint<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiPoint(self)
     }
 }
@@ -45,7 +46,7 @@ impl fmt::Display for MultiPoint {
     }
 }
 
-impl FromTokens for MultiPoint {
+impl<T: Float> FromTokens for MultiPoint<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result = FromTokens::comma_many(<Point as FromTokens>::from_tokens_with_parens, tokens);
         result.map(MultiPoint)

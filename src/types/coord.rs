@@ -11,13 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-extern crate num_traits;
 
 use std::fmt;
 // use num_traits::{Num, NumCast};
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
-use self::num_traits::Float;
+use num_traits::Float;
 
 
 #[derive(Default)]
