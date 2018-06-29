@@ -13,11 +13,15 @@
 // limitations under the License.
 
 use std::iter::Peekable;
+use num_traits::Float;
 
 #[derive(PartialEq, Debug)]
-pub enum Token {
+pub enum Token<T>
+where
+    T: Float,
+{
     Comma,
-    Number(f64),
+    Number(T),
     ParenClose,
     ParenOpen,
     Word(String),
@@ -38,13 +42,15 @@ fn is_numberlike(c: char) -> bool {
     }
 }
 
-pub type PeekableTokens = Peekable<Tokens>;
+pub type PeekableTokens = Peekable<Tokens<T>>;
 
-pub struct Tokens {
+pub struct Tokens<_>
+where T: Float
+{
     text: String,
 }
 
-impl Tokens {
+impl<T: Float> Tokens<T> {
     pub fn from_str(input: &str) -> Self {
         Tokens {
             text: input.to_string(),
@@ -52,10 +58,10 @@ impl Tokens {
     }
 }
 
-impl Iterator for Tokens {
-    type Item = Token;
+impl<T: Float> Iterator for Tokens<T> {
+    type Item = Token<T>;
 
-    fn next(&mut self) -> Option<Token> {
+    fn next(&mut self) -> Option<Token<T>> {
         // TODO: should this return Result?
         let next_char = match self.pop_front() {
             Some(c) => c,
@@ -71,7 +77,7 @@ impl Iterator for Tokens {
             c if is_numberlike(c) => {
                 let mut number = c.to_string() + &self.read_until_whitespace();
                 number = number.trim_left_matches('+').to_string();
-                match number.parse::<f64>() {
+                match number.parse::<T>() {
                     Ok(parsed_num) => Some(Token::Number(parsed_num)),
                     Err(e) => panic!("Could not parse number: {}", e),
                 }
@@ -84,7 +90,7 @@ impl Iterator for Tokens {
     }
 }
 
-impl Tokens {
+impl<T> Tokens<T> {
     fn pop_front(&mut self) -> Option<char> {
         match self.text.is_empty() {
             true => None,

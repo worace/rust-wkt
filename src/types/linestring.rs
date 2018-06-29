@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use tokenizer::PeekableTokens;
 use types::coord::Coord;
 use FromTokens;
 use Geometry;
+use tokenizer::PeekableTokens;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct LineString(pub Vec<Coord>);
+pub struct LineString<T: Float>(pub Vec<Coord<T>>);
 
-impl LineString {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> LineString<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::LineString(self)
     }
 }
 
-impl FromTokens for LineString {
+impl<T: Float> FromTokens for LineString<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result = FromTokens::comma_many(<Coord as FromTokens>::from_tokens, tokens);
         result.map(|vec| LineString(vec))
@@ -43,7 +44,7 @@ mod tests {
         let mut wkt = Wkt::from_str("LINESTRING (10 -20, -0 -0.5)").ok().unwrap();
         assert_eq!(1, wkt.items.len());
         let coords = match wkt.items.pop().unwrap() {
-            Geometry::LineString(LineString(coords)) => coords,
+            Geometry::LineString(LineString<T>(coords)) => coords,
             _ => unreachable!(),
         };
         assert_eq!(2, coords.len());

@@ -15,17 +15,18 @@
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct GeometryCollection(pub Vec<Geometry>);
+pub struct GeometryCollection<T: Float>(pub Vec<Geometry<T>>);
 
-impl GeometryCollection {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> GeometryCollection<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::GeometryCollection(self)
     }
 }
 
-impl FromTokens for GeometryCollection {
+impl<T: Float> FromTokens for GeometryCollection<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let mut items = Vec::new();
 

@@ -16,17 +16,18 @@ use tokenizer::PeekableTokens;
 use types::linestring::LineString;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct Polygon(pub Vec<LineString>);
+pub struct Polygon<T: Float>(pub Vec<LineString<T>>);
 
-impl Polygon {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> Polygon<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::Polygon(self)
     }
 }
 
-impl FromTokens for Polygon {
+impl<T: Float> FromTokens for Polygon<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result =
             FromTokens::comma_many(<LineString as FromTokens>::from_tokens_with_parens, tokens);

@@ -16,17 +16,18 @@ use tokenizer::PeekableTokens;
 use types::polygon::Polygon;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiPolygon(pub Vec<Polygon>);
+pub struct MultiPolygon<T: Float>(pub Vec<Polygon<T>>);
 
-impl MultiPolygon {
-    pub fn as_item(self) -> Geometry {
+impl<T: Float> MultiPolygon<T> {
+    pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiPolygon(self)
     }
 }
 
-impl FromTokens for MultiPolygon {
+impl<T: Float> FromTokens for MultiPolygon<T> {
     fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
         let result =
             FromTokens::comma_many(<Polygon as FromTokens>::from_tokens_with_parens, tokens);
