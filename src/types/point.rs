@@ -18,6 +18,7 @@ use types::CoordType;
 use types::coord::Coord;
 use FromTokens;
 use Geometry;
+use num_traits::Float;
 
 #[derive(Default)]
 pub struct Point<T: CoordType>(pub Option<Coord<T>>);
