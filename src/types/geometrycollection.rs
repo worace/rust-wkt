@@ -16,20 +16,19 @@ use std::fmt;
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
 use Geometry;
-use num_traits::Float;
+use types::CoordType;
 
 #[derive(Default)]
-pub struct GeometryCollection<T: Float>(pub Vec<Geometry<T>>);
+pub struct GeometryCollection<T: CoordType>(pub Vec<Geometry<T>>);
 
-impl<T: Float> GeometryCollection<T> {
+impl<T: CoordType> GeometryCollection<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::GeometryCollection(self)
     }
 }
 
-
-impl<T: Float> FromTokens for GeometryCollection<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> FromTokens<T> for GeometryCollection<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let mut items = Vec::new();
 
         let word = match tokens.next() {
@@ -64,7 +63,7 @@ mod tests {
 
     #[test]
     fn basic_geometrycollection() {
-        let mut wkt = Wkt::from_str("GEOMETRYCOLLECTION (POINT (8 4)))")
+        let mut wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION (POINT (8 4)))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());

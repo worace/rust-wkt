@@ -25,7 +25,7 @@ use types::MultiPoint;
 use types::MultiPolygon;
 use types::Point;
 use types::Polygon;
-use self::num_traits::Float;
+use types::CoordType;
 
 mod tokenizer;
 
@@ -37,9 +37,7 @@ pub mod types;
 #[cfg(feature = "geo-types")]
 pub use towkt::ToWkt;
 
-pub enum Geometry<T>
-where
-    T: Float,
+pub enum Geometry<T: CoordType>
 {
     Point(Point<T>),
     LineString(LineString<T>),
@@ -50,35 +48,35 @@ where
     GeometryCollection(GeometryCollection<T>),
 }
 
-impl<T: Float> Geometry<T> {
-    fn from_word_and_tokens(word: &str, tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> Geometry<T> {
+    fn from_word_and_tokens(word: &str, tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         match word {
             "POINT" => {
-                let x = <Point as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <Point<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "LINESTRING" => {
-                let x = <LineString as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <LineString<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "POLYGON" => {
-                let x = <Polygon as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <Polygon<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "MULTIPOINT" => {
-                let x = <MultiPoint as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <MultiPoint<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "MULTILINESTRING" => {
-                let x = <MultiLineString as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <MultiLineString<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "MULTIPOLYGON" => {
-                let x = <MultiPolygon as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <MultiPolygon<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             "GEOMETRYCOLLECTION" => {
-                let x = <GeometryCollection as FromTokens>::from_tokens_with_parens(tokens);
+                let x = <GeometryCollection<T> as FromTokens<T>>::from_tokens_with_parens(tokens);
                 x.map(|y| y.as_item())
             }
             _ => Err("Invalid type encountered"),
@@ -100,14 +98,14 @@ impl fmt::Display for Geometry {
     }
 }
 
-pub struct Wkt<T>
+pub struct Wkt<T = f64>
 where
-    T: Float,
+    T: CoordType,
 {
     pub items: Vec<Geometry<T>>,
 }
 
-impl<T: Float> Wkt<T> {
+impl<T: CoordType> Wkt<T> {
     pub fn new() -> Self {
         Wkt { items: vec![] }
     }
@@ -142,10 +140,10 @@ impl<T: Float> Wkt<T> {
     }
 }
 
-trait FromTokens: Sized + Default {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str>;
+trait FromTokens<T: CoordType>: Sized + Default {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str>;
 
-    fn from_tokens_with_parens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+    fn from_tokens_with_parens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         match tokens.next() {
             Some(Token::ParenOpen) => (),
             Some(Token::Word(ref s)) if s.to_ascii_uppercase() == "EMPTY" => {
@@ -161,9 +159,9 @@ trait FromTokens: Sized + Default {
         result
     }
 
-    fn comma_many<F>(f: F, tokens: &mut PeekableTokens) -> Result<Vec<Self>, &'static str>
+    fn comma_many<F>(f: F, tokens: &mut PeekableTokens<T>) -> Result<Vec<Self>, &'static str>
     where
-        F: Fn(&mut PeekableTokens) -> Result<Self, &'static str>,
+        F: Fn(&mut PeekableTokens<T>) -> Result<Self, &'static str>,
     {
         let mut items = Vec::new();
 
@@ -188,20 +186,20 @@ mod tests {
 
     #[test]
     fn empty_string() {
-        let wkt = Wkt::from_str("").ok().unwrap();
+        let wkt: Wkt<f64> = Wkt::from_str("").ok().unwrap();
         assert_eq!(0, wkt.items.len());
     }
 
     #[test]
     fn empty_items() {
-        let mut wkt = Wkt::from_str("POINT EMPTY").ok().unwrap();
+        let mut wkt: Wkt<f64> = Wkt::from_str("POINT EMPTY").ok().unwrap();
         assert_eq!(1, wkt.items.len());
         match wkt.items.pop().unwrap() {
             Geometry::Point(Point(None)) => (),
             _ => unreachable!(),
         };
 
-        let mut wkt = Wkt::from_str("MULTIPOLYGON EMPTY").ok().unwrap();
+        let mut wkt: Wkt<f64> = Wkt::from_str("MULTIPOLYGON EMPTY").ok().unwrap();
         assert_eq!(1, wkt.items.len());
         match wkt.items.pop().unwrap() {
             Geometry::MultiPolygon(MultiPolygon(polygons)) => assert_eq!(polygons.len(), 0),

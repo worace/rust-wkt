@@ -17,6 +17,7 @@ use std::default::Default;
 
 use tokenizer::{PeekableTokens, Token};
 
+pub use self::coord_type::CoordType;
 pub use self::coord::Coord;
 pub use self::geometrycollection::GeometryCollection;
 pub use self::linestring::LineString;
@@ -26,6 +27,7 @@ pub use self::multipolygon::MultiPolygon;
 pub use self::point::Point;
 pub use self::polygon::Polygon;
 
+mod coord_type;
 mod coord;
 mod geometrycollection;
 mod linestring;
@@ -35,10 +37,10 @@ mod multipolygon;
 mod point;
 mod polygon;
 
-trait FromTokens: Sized + Default {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str>;
+trait FromTokens<T: CoordType>: Sized + Default {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str>;
 
-    fn from_tokens_with_parens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+    fn from_tokens_with_parens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         match tokens.next() {
             Some(Token::ParenOpen) => (),
             Some(Token::Word(ref s)) if s.to_ascii_uppercase() == "EMPTY" => {
@@ -54,9 +56,9 @@ trait FromTokens: Sized + Default {
         result
     }
 
-    fn comma_many<F>(f: F, tokens: &mut PeekableTokens) -> Result<Vec<Self>, &'static str>
+    fn comma_many<F>(f: F, tokens: &mut PeekableTokens<T>) -> Result<Vec<Self>, &'static str>
     where
-        F: Fn(&mut PeekableTokens) -> Result<Self, &'static str>,
+        F: Fn(&mut PeekableTokens<T>) -> Result<Self, &'static str>,
     {
         let mut items = Vec::new();
 

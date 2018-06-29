@@ -13,25 +13,18 @@
 // limitations under the License.
 
 use std::fmt;
+use types::CoordType;
 use types::coord::Coord;
 use FromTokens;
 use Geometry;
 use tokenizer::PeekableTokens;
-use num_traits::Float;
 
 #[derive(Default)]
-pub struct LineString<T: Float>(pub Vec<Coord<T>>);
+pub struct LineString<T: CoordType>(pub Vec<Coord<T>>);
 
-impl<T: Float> LineString<T> {
+impl<T: CoordType> LineString<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::LineString(self)
-    }
-}
-
-impl<T: Float> FromTokens for LineString<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
-        let result = FromTokens::comma_many(<Coord as FromTokens>::from_tokens, tokens);
-        result.map(LineString)
     }
 }
 
@@ -52,6 +45,13 @@ impl fmt::Display for LineString {
     }
 }
 
+impl<T: CoordType> FromTokens<T> for LineString<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
+        let result = FromTokens::comma_many(<Coord<T> as FromTokens<T>>::from_tokens, tokens);
+        result.map(|vec| LineString(vec))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Coord, LineString};
@@ -62,7 +62,7 @@ mod tests {
         let mut wkt = Wkt::from_str("LINESTRING (10 -20, -0 -0.5)").ok().unwrap();
         assert_eq!(1, wkt.items.len());
         let coords = match wkt.items.pop().unwrap() {
-            Geometry::LineString(LineString<T>(coords)) => coords,
+            Geometry::LineString(LineString(coords)) => coords,
             _ => unreachable!(),
         };
         assert_eq!(2, coords.len());

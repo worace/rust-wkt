@@ -15,14 +15,14 @@
 use std::fmt;
 use tokenizer::PeekableTokens;
 use types::linestring::LineString;
+use types::CoordType;
 use FromTokens;
 use Geometry;
-use num_traits::Float;
 
 #[derive(Default)]
-pub struct MultiLineString<T: Float>(pub Vec<LineString<T>>);
+pub struct MultiLineString<T: CoordType>(pub Vec<LineString<T>>);
 
-impl<T: Float> MultiLineString<T> {
+impl<T: CoordType> MultiLineString<T> {
     pub fn as_item(self) -> Geometry<T> {
         Geometry::MultiLineString(self)
     }
@@ -51,11 +51,11 @@ impl fmt::Display for MultiLineString {
     }
 }
 
-impl<T: Float> FromTokens for MultiLineString<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> FromTokens<T> for MultiLineString<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let result =
-            FromTokens::comma_many(<LineString as FromTokens>::from_tokens_with_parens, tokens);
-        result.map(MultiLineString)
+            FromTokens::comma_many(<LineString<T> as FromTokens<T>>::from_tokens_with_parens, tokens);
+        result.map(|vec| MultiLineString(vec))
     }
 }
 
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn basic_multilinestring() {
-        let mut wkt = Wkt::from_str("MULTILINESTRING ((8 4, -3 0), (4 0, 6 -10))")
+        let mut wkt: Wkt<f64> = Wkt::from_str("MULTILINESTRING ((8 4, -3 0), (4 0, 6 -10))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());

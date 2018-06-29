@@ -13,16 +13,13 @@
 // limitations under the License.
 
 use std::fmt;
-// use num_traits::{Num, NumCast};
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
-use num_traits::Float;
-
+use types::CoordType;
 
 #[derive(Default)]
-pub struct Coord<T>
-where
-    T: Float,
+pub struct Coord<T = f64>
+where T: CoordType,
 {
     pub x: T,
     pub y: T,
@@ -43,8 +40,8 @@ impl fmt::Display for Coord {
     }
 }
 
-impl<T: Float> FromTokens for Coord<T> {
-    fn from_tokens(tokens: &mut PeekableTokens) -> Result<Self, &'static str> {
+impl<T: CoordType> FromTokens<T> for Coord<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let x = match tokens.next() {
             Some(Token::Number(n)) => n,
             _ => return Err("Expected a number for the X coordinate"),
