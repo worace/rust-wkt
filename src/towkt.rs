@@ -42,6 +42,12 @@ fn g_points_to_w_coords<T: CoordType>(g_points: &Vec<geo_types::Point<T>>) -> Ve
     w_points
 }
 
+fn g_simple_line_to_w_line<T: CoordType>(g_line: &geo_types::Line<T>) -> LineString<T> {
+    // let &geo_types::LineString(ref g_points) = g_line;
+    let points = vec![g_line.start, g_line.end];
+    g_points_to_w_line(&points)
+}
+
 fn g_line_to_w_line<T: CoordType>(g_line: &geo_types::LineString<T>) -> LineString<T> {
     let &geo_types::LineString(ref g_points) = g_line;
     g_points_to_w_line(g_points)
@@ -116,6 +122,8 @@ fn g_geocol_to_w_geocol<T: CoordType>(g_geocol: &geo_types::GeometryCollection<T
 fn g_geom_to_w_geom<T: CoordType>(g_geom: &geo_types::Geometry<T>) -> Geometry<T> {
     match g_geom {
         &geo_types::Geometry::Point(ref g_point) => g_point_to_w_point(g_point).as_item(),
+
+        &geo_types::Geometry::Line(ref g_line) => g_simple_line_to_w_line(g_line).as_item(),
 
         &geo_types::Geometry::LineString(ref g_line) => g_line_to_w_line(g_line).as_item(),
 
