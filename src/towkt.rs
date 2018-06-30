@@ -1,4 +1,4 @@
-extern crate geo;
+extern crate geo_types;
 
 use types::Coord;
 use types::GeometryCollection;
