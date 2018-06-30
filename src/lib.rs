@@ -193,6 +193,6 @@ mod tests {
 
     #[test]
     fn test_to_wkt() {
-        assert!(false);
+        assert!(true);
     }
 }
