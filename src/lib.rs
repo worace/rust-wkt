@@ -82,7 +82,7 @@ impl<T: CoordType> Geometry<T> {
         }
     }
 }
-pub struct Wkt<T = f64>
+pub struct Wkt<T>
 where
     T: CoordType,
 {
@@ -189,5 +189,10 @@ mod tests {
             Geometry::MultiPolygon(MultiPolygon(polygons)) => assert_eq!(polygons.len(), 0),
             _ => unreachable!(),
         };
+    }
+
+    #[test]
+    fn test_to_wkt() {
+        assert!(false);
     }
 }
