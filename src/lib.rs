@@ -13,7 +13,6 @@
 // limitations under the License.
 extern crate num_traits;
 
-use std::ascii::AsciiExt;
 use std::default::Default;
 use std::fmt;
 
