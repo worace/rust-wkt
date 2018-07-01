@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt;
 use tokenizer::{PeekableTokens, Token};
 use FromTokens;
 use types::CoordType;
@@ -48,5 +49,12 @@ impl<T: CoordType> FromTokens<T> for Coord<T> {
             z: None,
             m: None,
         })
+    }
+}
+
+
+impl<T: CoordType> fmt::Display for Coord<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str(&format!("Coord({}, {})", self.x, self.y))
     }
 }

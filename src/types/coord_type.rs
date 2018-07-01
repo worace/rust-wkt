@@ -13,6 +13,7 @@
 // limitations under the License.
 use num_traits::Float;
 use std::str::FromStr;
+use std::fmt::Display;
 
-pub trait CoordType: Float + Default + FromStr {}
-impl<T> CoordType for T where T: Float + Default + FromStr {}
+pub trait CoordType: Float + Default + FromStr + Display {}
+impl<T> CoordType for T where T: Float + Default + FromStr + Display {}
