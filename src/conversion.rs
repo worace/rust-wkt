@@ -33,6 +33,20 @@ fn linestring_to_g_linestring<T: geo_types::CoordinateType + CoordType>(ls: &Lin
     g_coords.into_iter().collect()
 }
 
+fn polygon_to_g_polygon<T: geo_types::CoordinateType + CoordType>(poly: &Polygon<T>) -> geo_types::Polygon<T> {
+    if poly.0.is_empty() {
+        geo_types::Polygon::new(geo_types::LineString(vec![]), vec![])
+    } else {
+        let mut g_rings: Vec<geo_types::LineString<T>> = vec![];
+        for r in &poly.0 {
+            g_rings.push(linestring_to_g_linestring(r));
+        }
+
+        let exterior = g_rings.remove(0);
+        geo_types::Polygon{exterior: exterior, interiors: g_rings}
+    }
+}
+
 impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T>
 {
     fn to_geo(self: &Geometry<T>) -> Result<geo_types::Geometry<T>, &'static str> {
@@ -43,20 +57,8 @@ impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T>
                 Ok(geo_types::Geometry::Point(g_point))
             }
             Geometry::LineString(ref ls) => Ok(geo_types::Geometry::LineString(linestring_to_g_linestring(ls))),
-            Geometry::Polygon(Polygon(ref rings)) => {
-                let mut g_rings: Vec<geo_types::LineString<T>> = vec![];
-                for r in rings {
-                    g_rings.push(linestring_to_g_linestring(r));
-                }
-
-                if g_rings.is_empty() {
-                    return Err("Must give at least 1 ring for a polygon");
-                }
-
-                let exterior = g_rings.remove(0);
-                let g_poly = geo_types::Polygon{exterior: exterior, interiors: g_rings};
-                Ok(geo_types::Geometry::Polygon(g_poly))
-
+            Geometry::Polygon(ref poly) => {
+                Ok(geo_types::Geometry::Polygon(polygon_to_g_polygon(poly)))
             }
             _ => Err("not implemented")
         }
@@ -110,6 +112,21 @@ mod tests {
     }
 
     #[test]
+    fn converting_empty_poly() {
+        let wkt: Wkt<f64> = Wkt::from_str("POLYGON EMPTY").ok().unwrap();
+        assert_eq!(1, wkt.items.len());
+        let poly = &wkt.items[0];
+        match poly {
+            Geometry::Polygon(_) => {
+                let g_poly: geo_types::Polygon<f64> = poly.to_geo().unwrap().as_polygon().unwrap();
+                assert_eq!(0, g_poly.exterior.into_iter().len());
+                assert_eq!(0, g_poly.interiors.len());
+            }
+            _ => assert!(false, "should be polygon!"),
+        }
+    }
+
+    #[test]
     fn converting_polygon_to_geo() {
         let wkt: Wkt<f64> = Wkt::from_str("POLYGON ((8 4, 4 0, 0 4, 8 4), (7 3, 4 1, 1 4, 7 3))").ok().unwrap();
         assert_eq!(1, wkt.items.len());
@@ -146,7 +163,7 @@ mod tests {
                     assert_eq!(y1, y2);
                 }
             }
-            _ => assert!(false, "should be linestring!"),
+            _ => assert!(false, "should be polygon!"),
         }
     }
 }
