@@ -31,6 +31,7 @@ mod tokenizer;
 mod towkt;
 
 pub mod types;
+pub mod conversion;
 
 #[cfg(feature = "geo-types")]
 pub use towkt::ToWkt;
