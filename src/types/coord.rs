@@ -26,6 +26,12 @@ where T: CoordType,
     pub m: Option<T>,
 }
 
+impl<T: CoordType> Coord<T> {
+    pub fn new(x: T, y: T) -> Coord<T> {
+        Coord{x, y, z: None, m: None}
+    }
+}
+
 impl<T: CoordType> FromTokens<T> for Coord<T> {
     fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let x = match tokens.next() {
