@@ -148,12 +148,3 @@ impl<T: CoordType> ToWkt<T> for geo_types::Geometry<T> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    // use geo_types;
-    #[test]
-    fn converting_geo() {
-        assert_eq!(1,2);
-    }
-}
