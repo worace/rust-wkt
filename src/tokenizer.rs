@@ -43,7 +43,7 @@ fn is_numberlike(c: char) -> bool {
     }
 }
 
-pub type PeekableTokens<T: CoordType> = Peekable<Tokens<T>>;
+pub type PeekableTokens<T> = Peekable<Tokens<T>>;
 
 pub struct Tokens<T>
 where T: CoordType,
@@ -82,7 +82,7 @@ impl<T: CoordType> Iterator for Tokens<T> {
                 number = number.trim_left_matches('+').to_string();
                 match number.parse::<T>() {
                     Ok(parsed_num) => Some(Token::Number(parsed_num)),
-                    Err(e) => panic!("Could not parse number: {}", c),
+                    Err(_) => panic!("Could not parse number: {}", c),
                 }
             }
             c => {
