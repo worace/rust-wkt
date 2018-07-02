@@ -5,7 +5,7 @@ use types::Coord;
 use types::CoordType;
 // use types::GeometryCollection;
 use types::LineString;
-// use types::MultiLineString;
+use types::MultiLineString;
 use types::MultiPoint;
 // use types::MultiPolygon;
 use types::Point;
@@ -90,6 +90,14 @@ impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T> {
                     .collect();
                 let g_mp = geo_types::MultiPoint(g_points);
                 Ok(geo_types::Geometry::MultiPoint(g_mp))
+            }
+            Geometry::MultiLineString(MultiLineString(ref lines)) => {
+                let g_lines = lines
+                    .iter()
+                    .map(|l| linestring_to_g_linestring(l))
+                    .collect();
+                let g_mls = geo_types::MultiLineString(g_lines);
+                Ok(geo_types::Geometry::MultiLineString(g_mls))
             }
             _ => Err("not implemented"),
         }
@@ -198,6 +206,20 @@ mod tests {
     }
 
     #[test]
+    fn converting_empty_multi_point() {
+        let wkt: Wkt<f64> = Wkt::from_str("MULTIPOINT EMPTY").ok().unwrap();
+        let mp = &wkt.items[0];
+        assert_eq!(1, wkt.items.len());
+        match mp {
+            Geometry::MultiPoint(_) => {
+                let g_mp: geo_types::MultiPoint<f64> = mp.to_geo().unwrap().as_multipoint().unwrap();
+                assert_eq!(0, g_mp.0.len());
+            }
+            _ => assert!(false, "Should be a MultiPoint"),
+        }
+    }
+
+    #[test]
     fn converting_multi_point_to_geo() {
         let wkt: Wkt<f64> = Wkt::from_str("MULTIPOINT ((8 4), (4 0))").ok().unwrap();
         let mp = &wkt.items[0];
@@ -216,10 +238,52 @@ mod tests {
             }
             _ => assert!(false, "Should be a MultiPoint"),
         }
-        // let c: Coord<f64> = Coord::new(12.0, 34.0);
-        // let p = Geometry::Point(Point(Some(c)));
-        // let g_point: geo_types::Point<f64> = p.to_geo().unwrap().as_point().unwrap();
-        // assert_eq!(12.0, g_point.0.x);
-        // assert_eq!(34.0, g_point.0.y);
+    }
+
+    #[test]
+    fn converting_empty_multi_line_string() {
+        let wkt: Wkt<f64> = Wkt::from_str("MULTILINESTRING EMPTY")
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let mls = &wkt.items[0];
+        match mls {
+            Geometry::MultiLineString(_) => {
+                let g_mls: geo_types::MultiLineString<f64> = mls.to_geo().unwrap().as_multilinestring().unwrap();
+                assert_eq!(0, g_mls.0.len());
+            }
+            _ => assert!(false, "Should be a MultiLineString"),
+        }
+    }
+
+    #[test]
+    fn converting_multi_line_string() {
+        let wkt: Wkt<f64> = Wkt::from_str("MULTILINESTRING ((8 4, -3 0), (4 0, 6 -10))")
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let mls = &wkt.items[0];
+        match mls {
+            Geometry::MultiLineString(_) => {
+                let g_mls: geo_types::MultiLineString<f64> = mls.to_geo().unwrap().as_multilinestring().unwrap();
+                assert_eq!(2, g_mls.0.len());
+
+                let exp = vec![
+                    vec![(8.0, 4.0), (-3.0, 0.0)],
+                    vec![(4.0, 0.0), (6.0, -10.0)]
+                ];
+
+                for (i, ls) in g_mls.into_iter().enumerate() {
+                    let coords_i = ls.into_iter().map(|p| p.0).map(|c| (c.x, c.y));
+                    let exp_i = exp.get(i).unwrap();
+
+                    for ((x1, y1), (x2, y2)) in coords_i.zip(exp_i.iter()) {
+                        assert_eq!(x1, *x2);
+                        assert_eq!(y1, *y2);
+                    }
+                }
+            }
+            _ => assert!(false, "Should be a MultiLineString"),
+        }
     }
 }
