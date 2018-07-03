@@ -3,7 +3,7 @@ extern crate geo_types;
 use std::convert::From;
 use types::Coord;
 use types::CoordType;
-// use types::GeometryCollection;
+use types::GeometryCollection;
 use types::LineString;
 use types::MultiLineString;
 use types::MultiPoint;
@@ -11,6 +11,7 @@ use types::MultiPolygon;
 use types::Point;
 use types::Polygon;
 use Geometry;
+use std;
 // use Wkt;
 
 // trait CoordCommon = geo_types::CoordinateType + CoordType;
@@ -106,6 +107,15 @@ impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T> {
                     .collect();
                 let g_mp = geo_types::MultiPolygon(g_polys);
                 Ok(geo_types::Geometry::MultiPolygon(g_mp))
+            }
+            Geometry::GeometryCollection(GeometryCollection(ref geoms)) => {
+                let mut g_geoms: Vec<geo_types::Geometry<T>> = vec![];
+                for geom in geoms {
+                    let g_geom = try!(geom.to_geo());
+                    g_geoms.push(g_geom);
+                }
+                let g_gc = geo_types::GeometryCollection(g_geoms);
+                Ok(geo_types::Geometry::GeometryCollection(g_gc))
             }
             _ => Err("not implemented"),
         }
@@ -356,7 +366,49 @@ mod tests {
                     assert_eq!(y1, *y2);
                 }
             }
-            _ => assert!(false, "Should be a MultiLineString"),
+            _ => assert!(false, "Should be a MultiPolygon"),
+        }
+    }
+
+    #[test]
+    fn converting_empty_geometry_collection() {
+        let wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION EMPTY")
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let gc = &wkt.items[0];
+        match gc {
+            Geometry::GeometryCollection(_) => {
+                let geom: geo_types::Geometry<f64> = gc.to_geo().unwrap();
+                match geom {
+                    geo_types::Geometry::GeometryCollection(g_gc) => {
+                        assert_eq!(0, g_gc.0.len());
+                    }
+                    _ => assert!(false, "Should be a Geom Collection")
+                }
+            }
+            _ => assert!(false, "Should be a Geom Collection"),
+        }
+    }
+
+    #[test]
+    fn converting_geometry_collection() {
+        let wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION EMPTY")
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let gc = &wkt.items[0];
+        match gc {
+            Geometry::GeometryCollection(_) => {
+                let geom: geo_types::Geometry<f64> = gc.to_geo().unwrap();
+                match geom {
+                    geo_types::Geometry::GeometryCollection(g_gc) => {
+                        assert_eq!(0, g_gc.0.len());
+                    }
+                    _ => assert!(false, "Should be a Geom Collection")
+                }
+            }
+            _ => assert!(false, "Should be a Geom Collection"),
         }
     }
 }
