@@ -35,6 +35,7 @@ pub mod types;
 
 #[cfg(feature = "geo-types")]
 pub use towkt::ToWkt;
+pub use togeo::ToGeo;
 
 pub enum Geometry<T: CoordType>
 {
