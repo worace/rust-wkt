@@ -7,7 +7,7 @@ use types::CoordType;
 use types::LineString;
 use types::MultiLineString;
 use types::MultiPoint;
-// use types::MultiPolygon;
+use types::MultiPolygon;
 use types::Point;
 use types::Polygon;
 use Geometry;
@@ -98,6 +98,14 @@ impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T> {
                     .collect();
                 let g_mls = geo_types::MultiLineString(g_lines);
                 Ok(geo_types::Geometry::MultiLineString(g_mls))
+            }
+            Geometry::MultiPolygon(MultiPolygon(ref polygons)) => {
+                let g_polys = polygons
+                    .iter()
+                    .map(|p| polygon_to_g_polygon(p))
+                    .collect();
+                let g_mp = geo_types::MultiPolygon(g_polys);
+                Ok(geo_types::Geometry::MultiPolygon(g_mp))
             }
             _ => Err("not implemented"),
         }
@@ -281,6 +289,71 @@ mod tests {
                         assert_eq!(x1, *x2);
                         assert_eq!(y1, *y2);
                     }
+                }
+            }
+            _ => assert!(false, "Should be a MultiLineString"),
+        }
+    }
+
+    #[test]
+    fn converting_empty_multi_poly() {
+        let wkt: Wkt<f64> = Wkt::from_str("MULTIPOLYGON EMPTY")
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let mp = &wkt.items[0];
+        match mp {
+            Geometry::MultiPolygon(_) => {
+                let g_mls: geo_types::MultiPolygon<f64> = mp.to_geo().unwrap().as_multipolygon().unwrap();
+                assert_eq!(0, g_mls.0.len());
+            }
+            _ => assert!(false, "Should be a MultiLineString"),
+        }
+    }
+
+    #[test]
+    fn converting_multi_polygon() {
+        let wkt_str = "MULTIPOLYGON (((40 40, 20 45, 45 30, 40 40)),
+                                     ((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),
+                                      (30 20, 20 15, 20 25, 30 20)))";
+        let wkt: Wkt<f64> = Wkt::from_str(wkt_str)
+            .ok()
+            .unwrap();
+        assert_eq!(1, wkt.items.len());
+        let mp = &wkt.items[0];
+        match mp {
+            Geometry::MultiPolygon(_) => {
+                let g_mls: geo_types::MultiPolygon<f64> = mp.to_geo().unwrap().as_multipolygon().unwrap();
+                assert_eq!(2, g_mls.0.len());
+
+                let exp_outer1 = vec![(40.0, 40.0), (20.0, 45.0), (45.0, 30.0), (40.0, 40.0)];
+
+                let poly1 = &g_mls.0[0];
+                let outer_coords = poly1.exterior.clone().into_iter().map(|p| p.0).map(|c| (c.x, c.y));
+
+                for ((x1, y1), (x2, y2)) in outer_coords.zip(exp_outer1.iter()) {
+                    assert_eq!(x1, *x2);
+                    assert_eq!(y1, *y2);
+                }
+                assert_eq!(0, poly1.interiors.len());
+
+                let poly2 = &g_mls.0[1];
+                let outer_coords = poly2.exterior.clone().into_iter().map(|p| p.0).map(|c| (c.x, c.y));
+                let inner_coords = poly2.interiors[0].clone().into_iter().map(|p| p.0).map(|c| (c.x, c.y));
+
+                let exp_outer2 = vec![(20.0, 35.0), (10.0, 30.0), (10.0, 10.0),
+                                      (30.0, 5.0), (45.0, 20.0), (20.0, 35.0)];
+
+                for ((x1, y1), (x2, y2)) in outer_coords.zip(exp_outer2.iter()) {
+                    assert_eq!(x1, *x2);
+                    assert_eq!(y1, *y2);
+                }
+
+                assert_eq!(1, poly2.interiors.len());
+                let exp_inner = vec![(30.0, 20.0), (20.0, 15.0), (20.0, 25.0), (30.0, 20.0)];
+                for ((x1, y1), (x2, y2)) in inner_coords.zip(exp_inner.iter()) {
+                    assert_eq!(x1, *x2);
+                    assert_eq!(y1, *y2);
                 }
             }
             _ => assert!(false, "Should be a MultiLineString"),
