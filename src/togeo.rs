@@ -125,7 +125,7 @@ impl<T: geo_types::CoordinateType + CoordType> ToGeo<T> for Geometry<T> {
 #[cfg(test)]
 mod tests {
     extern crate geo_types;
-    use conversion::ToGeo;
+    use togeo::ToGeo;
     use types::Coord;
     use types::LineString;
     use types::Point;
