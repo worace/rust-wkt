@@ -393,7 +393,7 @@ mod tests {
 
     #[test]
     fn converting_geometry_collection() {
-        let wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION EMPTY")
+        let wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(4 6,7 10))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());
@@ -403,7 +403,25 @@ mod tests {
                 let geom: geo_types::Geometry<f64> = gc.to_geo().unwrap();
                 match geom {
                     geo_types::Geometry::GeometryCollection(g_gc) => {
-                        assert_eq!(0, g_gc.0.len());
+                        assert_eq!(2, g_gc.0.len());
+                        match g_gc.0[0] {
+                            geo_types::Geometry::Point(ref p) => {
+                                assert_eq!(4.0, p.0.x);
+                                assert_eq!(6.0, p.0.y);
+                            }
+                            _ =>  assert!(false, "First element should be a point")
+                        }
+                        match g_gc.0[1] {
+                            geo_types::Geometry::LineString(ref ls) => {
+                                assert_eq!(2, ls.0.len());
+                                assert_eq!(4.0, ls.0[0].0.x);
+                                assert_eq!(6.0, ls.0[0].0.y);
+
+                                assert_eq!(7.0, ls.0[1].0.x);
+                                assert_eq!(10.0, ls.0[1].0.y);
+                            }
+                            _ =>  assert!(false, "First element should be a point")
+                        }
                     }
                     _ => assert!(false, "Should be a Geom Collection")
                 }
