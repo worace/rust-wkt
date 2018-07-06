@@ -83,7 +83,7 @@ impl<T: CoordType> Geometry<T> {
     }
 }
 
-impl fmt::Display for Geometry {
+impl<T: CoordType> fmt::Display for Geometry<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             Geometry::Point(point) => point.fmt(f),

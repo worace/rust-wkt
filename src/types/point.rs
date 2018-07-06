@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn write_empty_point() {
-        let point = Point(None);
+        let point: Point<f64> = Point(None);
 
         assert_eq!("POINT EMPTY", format!("{}", point));
     }

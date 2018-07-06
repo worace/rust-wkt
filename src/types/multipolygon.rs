@@ -28,7 +28,7 @@ impl<T: CoordType> MultiPolygon<T> {
     }
 }
 
-impl fmt::Display for MultiPolygon {
+impl<T: CoordType> fmt::Display for MultiPolygon<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
             f.write_str("MULTIPOLYGON EMPTY")
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn write_empty_multipolygon() {
-        let multipolygon = MultiPolygon(vec![]);
+        let multipolygon: MultiPolygon<f64> = MultiPolygon(vec![]);
 
         assert_eq!("MULTIPOLYGON EMPTY", format!("{}", multipolygon));
     }

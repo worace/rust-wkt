@@ -28,7 +28,7 @@ impl<T: CoordType> MultiLineString<T> {
     }
 }
 
-impl fmt::Display for MultiLineString {
+impl<T: CoordType> fmt::Display for MultiLineString<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
             f.write_str("MULTILINESTRING EMPTY")
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn write_empty_multilinestring() {
-        let multilinestring = MultiLineString(vec![]);
+        let multilinestring: MultiLineString<f64> = MultiLineString(vec![]);
 
         assert_eq!("MULTILINESTRING EMPTY", format!("{}", multilinestring));
     }

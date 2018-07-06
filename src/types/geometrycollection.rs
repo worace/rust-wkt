@@ -27,6 +27,23 @@ impl<T: CoordType> GeometryCollection<T> {
     }
 }
 
+impl<T: CoordType> fmt::Display for GeometryCollection<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        if self.0.is_empty() {
+            f.write_str("GEOMETRYCOLLECTION EMPTY")
+        } else {
+            let strings = self
+                .0
+                .iter()
+                .map(|geometry| format!("{}", geometry))
+                .collect::<Vec<_>>()
+                .join(",");
+
+            write!(f, "GEOMETRYCOLLECTION({})", strings)
+        }
+    }
+}
+
 impl<T: CoordType> FromTokens<T> for GeometryCollection<T> {
     fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let mut items = Vec::new();
@@ -76,7 +93,7 @@ mod tests {
 
     #[test]
     fn complex_geometrycollection() {
-        let mut wkt = Wkt::from_str("GEOMETRYCOLLECTION (POINT (8 4),LINESTRING(4 6,7 10)))")
+        let mut wkt: Wkt<f64> = Wkt::from_str("GEOMETRYCOLLECTION (POINT (8 4),LINESTRING(4 6,7 10)))")
             .ok()
             .unwrap();
         assert_eq!(1, wkt.items.len());
@@ -89,7 +106,7 @@ mod tests {
 
     #[test]
     fn write_empty_geometry_collection() {
-        let geometry_collection = GeometryCollection(vec![]);
+        let geometry_collection: GeometryCollection<f64> = GeometryCollection(vec![]);
 
         assert_eq!(
             "GEOMETRYCOLLECTION EMPTY",

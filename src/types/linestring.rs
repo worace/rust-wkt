@@ -28,7 +28,7 @@ impl<T: CoordType> LineString<T> {
     }
 }
 
-impl fmt::Display for LineString {
+impl<T: CoordType> fmt::Display for LineString<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
             f.write_str("LINESTRING EMPTY")
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn write_empty_linestring() {
-        let linestring = LineString(vec![]);
+        let linestring: LineString<f64> = LineString(vec![]);
 
         assert_eq!("LINESTRING EMPTY", format!("{}", linestring));
     }

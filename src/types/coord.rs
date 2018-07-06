@@ -27,7 +27,7 @@ where T: CoordType,
     pub m: Option<T>,
 }
 
-impl fmt::Display for Coord {
+impl<T: CoordType> fmt::Display for Coord<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         write!(f, "{} {}", self.x, self.y)?;
         if let Some(z) = self.z {

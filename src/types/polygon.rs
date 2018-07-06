@@ -28,7 +28,7 @@ impl<T: CoordType> Polygon<T> {
     }
 }
 
-impl fmt::Display for Polygon {
+impl<T: CoordType> fmt::Display for Polygon<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
             f.write_str("POLYGON EMPTY")
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn write_empty_polygon() {
-        let polygon = Polygon(vec![]);
+        let polygon: Polygon<f64> = Polygon(vec![]);
 
         assert_eq!("POLYGON EMPTY", format!("{}", polygon));
     }

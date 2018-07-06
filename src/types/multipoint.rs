@@ -28,7 +28,7 @@ impl<T: CoordType> MultiPoint<T> {
     }
 }
 
-impl fmt::Display for MultiPoint {
+impl<T: CoordType> fmt::Display for MultiPoint<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
             f.write_str("MULTIPOINT EMPTY")
@@ -72,7 +72,7 @@ mod tests {
 
     #[test]
     fn write_empty_multipoint() {
-        let multipoint = MultiPoint(vec![]);
+        let multipoint: MultiPoint<f64> = MultiPoint(vec![]);
 
         assert_eq!("MULTIPOINT EMPTY", format!("{}", multipoint));
     }
