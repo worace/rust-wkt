@@ -1,6 +1,5 @@
 extern crate geo_types;
 
-use std::convert::From;
 use types::Coord;
 use types::CoordType;
 use types::GeometryCollection;
@@ -11,7 +10,6 @@ use types::MultiPolygon;
 use types::Point;
 use types::Polygon;
 use Geometry;
-use std;
 // use Wkt;
 
 // trait CoordCommon = geo_types::CoordinateType + CoordType;
@@ -127,7 +125,6 @@ mod tests {
     extern crate geo_types;
     use togeo::ToGeo;
     use types::Coord;
-    use types::LineString;
     use types::Point;
     use Geometry;
     use Wkt;
