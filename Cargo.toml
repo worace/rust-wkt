@@ -12,6 +12,3 @@ num-traits = "0.2"
 
 [features]
 default = ["geo-types"]
-
-[lib]
-doctest = false

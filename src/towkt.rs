@@ -51,11 +51,6 @@ fn g_line_to_w_linestring<T: CoordType>(g_line: &geo_types::Line<T>) -> LineStri
     g_points_to_w_linestring(&vec![g_line.start, g_line.end])
 }
 
-fn g_line_to_w_line<T: CoordType>(g_line: &geo_types::LineString<T>) -> LineString<T> {
-    let &geo_types::LineString(ref g_points) = g_line;
-    g_points_to_w_linestring(g_points)
-}
-
 fn g_points_to_w_linestring<T: CoordType>(g_points: &Vec<geo_types::Point<T>>) -> LineString<T> {
     let w_points = g_points_to_w_coords(g_points);
     LineString(w_points)
@@ -71,7 +66,6 @@ fn g_lines_to_w_lines<T: CoordType>(g_lines: &Vec<geo_types::LineString<T>>) -> 
 }
 
 fn g_polygon_to_w_polygon<T: CoordType>(g_polygon: &geo_types::Polygon<T>) -> Polygon<T> {
-    // let &geo_types::Polygon(ref outer_line, ref inner_lines) = g_polygon;
     let mut poly_lines = vec![];
 
     // Outer
@@ -128,7 +122,7 @@ fn g_geom_to_w_geom<T: CoordType>(g_geom: &geo_types::Geometry<T>) -> Geometry<T
 
         &geo_types::Geometry::Line(ref g_line) => g_line_to_w_linestring(g_line).as_item(),
 
-        &geo_types::Geometry::LineString(ref g_line) => g_line_to_w_line(g_line).as_item(),
+        &geo_types::Geometry::LineString(ref g_line) => g_linestring_to_w_linestring(g_line).as_item(),
 
         &geo_types::Geometry::Polygon(ref g_polygon) => g_polygon_to_w_polygon(g_polygon).as_item(),
 
@@ -152,14 +146,5 @@ impl<T: CoordType> ToWkt<T> for geo_types::Geometry<T> {
         Wkt {
             items: vec![w_geom],
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    // use geo_types;
-    #[test]
-    fn converting_geo() {
-        assert_eq!(1,1);
     }
 }

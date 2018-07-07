@@ -28,6 +28,13 @@ impl<T: CoordType> LineString<T> {
     }
 }
 
+impl<T: CoordType> FromTokens<T> for LineString<T> {
+    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
+        let result = FromTokens::comma_many(<Coord<T> as FromTokens<T>>::from_tokens, tokens);
+        result.map(LineString)
+    }
+}
+
 impl<T: CoordType> fmt::Display for LineString<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if self.0.is_empty() {
@@ -42,13 +49,6 @@ impl<T: CoordType> fmt::Display for LineString<T> {
 
             write!(f, "LINESTRING({})", strings)
         }
-    }
-}
-
-impl<T: CoordType> FromTokens<T> for LineString<T> {
-    fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
-        let result = FromTokens::comma_many(<Coord<T> as FromTokens<T>>::from_tokens, tokens);
-        result.map(|vec| LineString(vec))
     }
 }
 

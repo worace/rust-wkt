@@ -49,7 +49,7 @@ impl<T: CoordType> fmt::Display for MultiPoint<T> {
 impl<T: CoordType> FromTokens<T> for MultiPoint<T> {
     fn from_tokens(tokens: &mut PeekableTokens<T>) -> Result<Self, &'static str> {
         let result = FromTokens::comma_many(<Point<T> as FromTokens<T>>::from_tokens_with_parens, tokens);
-        result.map(|vec| MultiPoint(vec))
+        result.map(MultiPoint)
     }
 }
 
