@@ -207,9 +207,4 @@ mod tests {
             _ => unreachable!(),
         };
     }
-
-    #[test]
-    fn test_to_wkt() {
-        assert!(false);
-    }
 }
